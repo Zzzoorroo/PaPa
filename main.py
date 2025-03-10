@@ -30,6 +30,44 @@ class PAPA(QWidget):
         self.clear_btn = QPushButton("Clear")
         self.dark_mode =  QPushButton("Dark mode")
         
+        
+        self.table -  QTableWidget()
+
+        
+        self.figure = plt.figure()
+        self.canvas =  FigureCanvas(self.figure)
+        
+        #Desing Out Layout
+        self.master_layout = QHBOXLayout()
+        self.col1 = QVBoxLayout()
+        self.col2 = QVBoxLayout()
+        
+        self.sub_row1 = QHBOXLayout()
+        self.sub_row2 = QHBOXLayout()
+        self.sub_row3 = QHBOXLayout()
+        self.sub_row4 = QHBOXLayout()
+
+        self.sub_row1.addWidget(QLabel("Date:"))
+        self.sub_row1.addWidget(self.date_box)
+        self.sub_row2.addWidget(QLabel("Calories:"))
+        self.sub_row2.addWidget(self.kal_box)
+        self.sub_row3.addWidget(QLabel("KM:"))
+        self.sub_row3.addWidget(self.distance_box)
+        self.sub_row4.addWidget(QLabel("Description"))
+        self.sub_row4.addWIdget(self.description)    
+        
+        self.col1.addLayout(self.sub_row1)
+        self.col1.addLayout(self.sub_row2)
+        self.col1.addLayout(self.sub_row3)
+        self.col1.addLayout(self.sub_row4)
+        self.col1.addWidget(self.dark_mode)
+        
+        
+        btn_row1 = QHBOXLayout()
+        btn_row2 = QHBOXLayout()
+        
+       
+        
     #Load Tables
     
     
