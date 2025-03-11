@@ -72,12 +72,13 @@ class PAPA(QWidget):
         self.col1.addLayout(btn_row2)
 
         self.master_layout.addLayout(self.col1)
-        self.setLayout(self.master_layout)  # Important to display the layout
+        self.setLayout(self.master_layout)  
 
     
 # Run the application
 if __name__ == "__main__":
     app = QApplication([])
-    main = PAPA()  # Corrected class name
+    main = PAPA()  
     main.show()
     app.exec_()
+
