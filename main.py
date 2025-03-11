@@ -7,6 +7,26 @@ from PyQt5.QtWidgets import (
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
+import sys
+
+print("Script started...")
+
+try:
+    from PyQt5.QtWidgets import QApplication, QWidget
+    print("PyQt5 imported successfully")
+except Exception as e:
+    print("Error importing PyQt5:", e)
+    sys.exit(1)
+
+app = QApplication([])
+print("QApplication initialized")
+main = QWidget()
+main.show()
+print("Main window displayed")
+app.exec_()
+print("App execution ended")
+
+print("Script started...")
 
 # Main class
 class PAPA(QWidget):
@@ -80,5 +100,6 @@ if __name__ == "__main__":
     app = QApplication([])
     main = PAPA()  
     main.show()
+    print("App is running...")
     app.exec_()
 
