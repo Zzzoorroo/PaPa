@@ -83,4 +83,3 @@ if __name__ == "__main__":
     main.show()
     print("App is running...")
     app.exec_()
-
