@@ -1,12 +1,11 @@
 # Imports
 from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, 
-    QHBoxLayout, QTableWidget, QTableWidgetItem, QDateEdit, QLineEdit, QHeaderView, QMessageBox
-)
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel,QDateEdit,QLineEdit,QVBoxLayout,QHBoxLayout,QPushButton,QTableWidget,QTableWidgetItem, QHeaderView, QMessageBox, QCheckBox
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import numpy as np
+from sys import exit
 
 # Main class
 class PAPA(QWidget):
@@ -35,7 +34,7 @@ class PAPA(QWidget):
         self.add_btn = QPushButton("Add")
         self.delete_btn = QPushButton("Delete")
         self.clear_btn = QPushButton("Clear")
-        self.dark_mode = QPushButton("Dark mode")
+        self.dark_mode = QCheckBox("Dark mode")
 
         self.table = QTableWidget()
         self.table.setColumnCount(5)
@@ -92,11 +91,16 @@ class PAPA(QWidget):
         self.master_layout.addLayout(self.col2, 70)
         self.setLayout(self.master_layout)  
 
+        self.apply_styles()
         self.load_table()
 
     #Events
     def button_click(self):
         self.add_btn.clicked.connect(self.add_workout)
+        self.delete_btn.clicked.connect(self.delete_workout)
+        self.submit_btn.clicked.connect(self.calculate_calories)
+        self.dark_mode.stateChanged.connect(self.toggle_dark_mode)
+        self.clear_btn.clicked.connect(self.reset)
 
 
     #Load Tables
@@ -143,8 +147,158 @@ class PAPA(QWidget):
 
         self.load_table()
 
-
     #Delete Tables
+    def delete_workout(self):
+        selected_row =  self.table.currentRow()
+
+        if selected_row == -1:
+            QMessageBox.warning(self, "ERROR","Please choose a row to delete")
+
+        fit_id = int(self.table.item(selected_row,0).text())
+        confirm = QMessageBox.question(self, "Are you sure?", "Doelete this workout", QMessageBox.Yes | QMessageBox.No)
+
+        if confirm == QMessageBox.No:
+            return
+        
+        query = QSqlQuery()
+        query.prepare("DELETE FROM fitness WHERE id = ?")
+        query.addBindValue(fit_id)
+        query.exec_()
+
+        self.load_table()
+
+    #Calculate Calories
+    def calculate_calories(self):
+        distances = []
+        calories = []
+
+        query = QSqlQuery("SELECT distance, calories FROM fitness ORDER BY calories ASC")
+        while query.next():
+            distance = query.value(0)
+            calorie = query.value(1)
+            distances.append(distance)
+            calories.append(calorie)
+
+        try:
+            min_calorie = min(calories)
+            max_calories = max(calories)
+            normalized_calories = [(calorie - min_calorie) / (max_calories - min_calorie) for calorie in calories]
+
+            plt.style.use("Solarize_Light2")
+            ax = self.figure.subplots()
+            ax.scatter(distances, calories, c=normalized_calories, cmap="viridis", label="Data Points")
+            ax.set_title("Distance vs Calories")
+            ax.set_xlabel("Distance")
+            ax.set_ylabel("Calories")
+            cbar = ax.figure.colorbar(ax.collections[0], label = "Normalized Calories")
+            ax.legend()
+            self.canvas.draw()
+
+        except Exception as e:
+            print("ERROR:{e}")
+            QMessageBox.warning(self, "ERROR", "please input some data")
+
+    #Set background colors
+    def apply_styles(self):
+        # Set background colors
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #b8c9e1;
+            }
+            
+            QLabel {
+                color: #333;
+                font-size: 14px;
+            }
+            
+            QLineEdit, QComboBox, QDateEdit, QPushButton {
+                background-color: #b8c9e1;
+                color: #333;
+                border: 1px solid #444;
+                padding: 5px;
+            }
+            
+            QTableWidget {
+                background-color: #b8c9e1;
+                color: #333;
+                border: 1px solid #444;
+                selection-background-color: #ddd;
+            }
+            
+            QPushButton {
+                background-color: #4caf50;
+                color: #fff;
+                border: none;
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        figure_color = "#b8c9e1"
+        self.figure.patch.set_facecolor(figure_color)
+        self.canvas.setStyleSheet(f"background-color: {figure_color};")
+
+        if self.dark_mode.isChecked():
+            self.setStyleSheet(
+                """
+                FitnessApp {
+                    background-color: #222222;
+                }
+
+                QLineEdit, QPushButton, QDateEdit {
+                    background-color:#222222;
+                    color: #eeeeee;
+                    border: 1px solid #444;
+                    padding: 5px;
+                }
+                QLabel{
+                     background-color:#222222;
+                    color: #eeeeee;
+                    padding: 5px;
+                }
+
+                QTableWidget {
+                    background-color: #444444;
+                    color: #eeeeee;
+                }
+                
+                QCheckBox{
+                    color: #eeeeee;
+                }
+                QPushButton {
+                background-color: #40484c;
+                color: #fff;
+                border: none;
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+                QPushButton:hover {
+                    background-color: #444d4f;
+                }
+                """
+            )
+            figure_color = "#40484c"
+            self.figure.patch.set_facecolor(figure_color)
+            self.canvas.setStyleSheet(f"background-color: {figure_color};")
+
+    #Dark mode        
+    def toggle_dark_mode(self):
+        self.apply_styles()
+
+    #Reset
+    def reset(self):
+        self.date_box.setDate(QDate.currentDate())
+        self.kal_box.clear()
+        self.distance_box.clear()
+        self.description.clear()
+        self.figure.clear()
+        self.canvas.draw()
+
+        self.load_table()
    # def delete_workouts(
 #Initialize my DB
 db = QSqlDatabase.addDatabase("QSQLITE")
