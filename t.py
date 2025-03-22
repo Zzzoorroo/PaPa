@@ -14,7 +14,6 @@ class PAPA(QWidget):
         super().__init__()
         self.settings()
         self.initUI()
-        self.button_click()
             
     #Settings 
     def settings(self):
@@ -94,11 +93,6 @@ class PAPA(QWidget):
 
         self.load_table()
 
-    #Events
-    def button_click(self):
-        self.add_btn.clicked.connect(self.add_workout)
-
-
     #Load Tables
     def load_table(self):
         self.table.setRowCount(0)
@@ -119,33 +113,6 @@ class PAPA(QWidget):
             self.table.setItem(row, 4, QTableWidgetItem(description))
             row += 1
 
-    #Add Tables
-    def add_workout(self):
-        date = self.date_box.date().toString("yyyy-MM-dd")
-        calories = self.kal_box.text()
-        distance = self.distance_box.text()
-        description = self.description.text()
-
-        query =QSqlQuery("""
-                INSERT INTO fitness (date, calories, distance, description )
-                         VALUES (?,?,?,?)
-                        """)
-        query.addBindValue(date)
-        query.addBindValue(calories)
-        query.addBindValue(distance)
-        query.addBindValue(description)
-        query.exec_()
-
-        self.date_box.setDate(QDate.currentDate())
-        self.kal_box.clear()
-        self.distance_box.clear()
-        self.description.clear()
-
-        self.load_table()
-
-
-    #Delete Tables
-   # def delete_workouts(
 #Initialize my DB
 db = QSqlDatabase.addDatabase("QSQLITE")
 db.setDatabaseName("fitness.db")
